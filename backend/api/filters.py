@@ -45,11 +45,11 @@ class RecipeFilter(django_filters.FilterSet):
                 is_in_shopping_cart=True,
             )
         return Recipe.objects.all()
-    
 
-    class IngredientFilter(django_filters.FilterSet):
-        name = django_filters.CharFilter(lookup_expr='startswith')
 
-        class Meta:
-            model = Ingredient
-            fields = ('name',)
+class IngredientFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(lookup_expr='startswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)

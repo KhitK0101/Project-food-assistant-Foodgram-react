@@ -38,7 +38,7 @@ class UserGetSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        request  = self.context.get('request').user
+        request = self.context.get('request').user
         return request.is_authenticated and request.subscriber.filter(
             user=request, author=obj
         ).exists()
@@ -191,23 +191,23 @@ class RecipeSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients', 'is_favorited',
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
-    
+
     def get_is_favorited(self, obj):
         """Проверка - находится ли рецепт в избранном."""
         request = self.context.get('request')
         return (request and request.user.is_authenticated
                 and Favorite.objects.filter(user=self.context['request'].user,
-                                        recipe=obj).exists()
-        )
+                                            recipe=obj).exists()
+                )
 
     def get_is_in_shopping_cart(self, obj):
         """Проверка - находится ли рецепт в списке покупок."""
         request = self.context.get('request')
         return (request and request.user.is_authenticated
                 and ShoppingCart.objects.filter(
-                user=self.context['request'].user,
-                recipe=obj).exists()
-        )
+                    user=self.context['request'].user,
+                    recipe=obj).exists()
+                )
 
 
 class RecipeWriteSerializer(RecipeSerializer):
