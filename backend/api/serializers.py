@@ -279,33 +279,6 @@ class RecipeWriteSerializer(RecipeSerializer):
             )
         return data
 
-    def create(self, validated_data):
-        author = self.context.get('request').user
-        ingredients = validated_data.pop('ingredients_amount')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data, author=author)
-        recipe.tags.add(*tags)
-        self.save_ingredients(recipe, ingredients)
-        return recipe
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.image = validated_data.get('image', instance.image)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
-        ingredients = validated_data.pop('ingredients_amount')
-        tags = validated_data.pop('tags')
-        instance.tags.clear()
-        instance.tags.add(*tags)
-        instance.ingredients.clear()
-        recipe = instance
-        self.save_ingredients(recipe, ingredients)
-        instance.save()
-        return instance
-
 
 class RecipeShortSerializer(RecipeSerializer):
     """Сериализатор короткого рецепта."""
