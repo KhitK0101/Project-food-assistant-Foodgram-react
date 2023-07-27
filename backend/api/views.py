@@ -16,7 +16,7 @@ from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (
     FavoriteSerializer, IngredientSerializer,
     RecipeShortSerializer, RecipeWriteSerializer,
-    ShoppingCartSerializer, SubscriptionSerializer,
+    ShoppingCartSerializer,
     SubscriptionUserSerializer, TagSerializer,
     UserSingUpSerializer,
 )
@@ -57,7 +57,6 @@ class UserViewSet(UserViewSet):
         methods=['GET'],
         permission_classes=(permissions.IsAuthenticated,)
     )
-
     @subscribe.mapping.delete
     def unsubscribe(self, request, pk):
         user = request.user
