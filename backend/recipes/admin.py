@@ -6,7 +6,7 @@ from .models import (Favorite, Ingredient, IngredientAmount, Recipe,
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    """Ingredient model in admin."""
+    """Модель ингредиента в админке."""
     list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
 
@@ -18,13 +18,13 @@ class IngredientsInline(admin.TabularInline):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    """Tag model in admin."""
+    """Модель тега в админке."""
     list_display = ('id', 'name', 'color', 'slug')
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    """Recipe model in admin."""
+    """Модель рецепта в админке."""
     list_display = ('name', 'author', 'text', 'added_to_favorite')
     list_filter = ('author', 'name', 'tags')
     inlines = (IngredientsInline,)
@@ -36,21 +36,27 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class GenreAdmin(admin.ModelAdmin):
-    list_display = ('id',
-                    'recipe',
-                    'user')
+    list_display = (
+        'id',
+        'recipe',
+        'user'
+    )
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('id',
-                    'recipe',
-                    'user')
+    list_display = (
+        'id',
+        'recipe',
+        'user'
+    )
 
 
 @admin.register(IngredientAmount)
 class IngredientAmountAdmin(admin.ModelAdmin):
-    list_display = ('id',
-                    'ingredient',
-                    'recipe',
-                    'amount')
+    list_display = (
+        'id',
+        'ingredient',
+        'recipe',
+        'amount'
+    )

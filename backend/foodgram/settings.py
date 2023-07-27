@@ -20,13 +20,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework.authtoken',
-    'rest_framework',
     'django_filters',
+    'djoser',
+    'rest_framework',
+    'rest_framework.authtoken',
     'api',
     'users',
     'recipes',
-    'djoser',
+    'colorfield',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -112,7 +113,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPagination',
 }
 
 DJOSER = {
@@ -127,8 +127,31 @@ DJOSER = {
         'user': [
             'rest_framework.permissions.IsAuthenticatedOrReadOnly'
         ],
-        'user_list': [
-            'rest_framework.permissions.IsAuthenticatedOrReadOnly'
-        ],
     },
 }
+
+LENGTH_DATA_USER = 150
+LENGTH_MAX = 200
+LENGTH_EMAIL = 254
+
+USERNAME_SYM = r'[\w\.@+-]+'
+
+NOT_ALLOWED_CHAR_NAME = ('{chars} недопустимые символы '
+                         ' имени пользователя {username}.')
+NOT_ALLOWED_ME = ('Невозможно создать пользователя с '
+                  'именем: << {username} >> - имя запрещено!')
+
+COLOR_REGEX = r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+NOT_COLOR_HEX = 'Цвет не в формате HEX'
+LENGTH_COLOR = 7
+LENGTH_NAME_COLOR = 50
+
+COOKING_TIME_MIN_VALUE = 1
+COOKING_TIME_MIN_ERROR = (
+    'Время приготовления не может быть менее одной минуты!'
+)
+
+INGREDIENT_MIN_AMOUNT = 1
+INGREDIENT_MIN_AMOUNT_ERROR = 'Количество ингредиентов не может быть меньше одного!'
+
+PAGINATION_PAGE_SIZE = 6

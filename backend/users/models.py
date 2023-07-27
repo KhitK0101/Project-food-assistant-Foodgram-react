@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+from .validators import validate_username
 
 
 class User(AbstractUser):
@@ -17,54 +20,38 @@ class User(AbstractUser):
     ]
 
     email = models.EmailField(
+        max_length=settings.LENGTH_EMAIL,
         blank=False,
-        max_length=254,
         unique=True,
-        verbose_name='Email',
+        verbose_name='Электронная почта',
     )
     username = models.CharField(
+        validators=(validate_username,),
+        max_length=settings.LENGTH_DATA_USER,
         blank=False,
-        max_length=150,
         unique=True,
-        verbose_name='Username',
+        null=False,
+        verbose_name='Имя пользователя',
     )
     first_name = models.CharField(
+        max_length=settings.LENGTH_DATA_USER,
         blank=False,
-        max_length=150,
-        verbose_name='First Name',
+        verbose_name='Фамилия',
     )
     last_name = models.CharField(
+        max_length=settings.LENGTH_DATA_USER,
         blank=False,
-        max_length=150,
-        verbose_name='Last Name',
+        verbose_name='Имя',
     )
     password = models.CharField(
-        max_length=150,
-        verbose_name='Password',
+        max_length=settings.LENGTH_DATA_USER,
+        verbose_name='Пароль',
     )
-    role = models.CharField(
-        default='guest',
-        choices=USER_ROLES,
-        max_length=15,
-        verbose_name='User Role',
-    )
-
-    @property
-    def is_guest(self):
-        return self.role == self.GUEST
-
-    @property
-    def is_authorized(self):
-        return self.role == self.AUTHORIZED
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser
 
     class Meta:
-        ordering = ('id',)
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        ordering = ('username', 'last_name', 'first_name')
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.username
@@ -75,18 +62,29 @@ class Subscription(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='follower',
-        verbose_name='Subscriber',
+        verbose_name='Подписчик',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='Recipe Author',
+        verbose_name='Автор рецепта',
     )
 
     class Meta:
-        verbose_name = 'Subscription'
-        verbose_name_plural = 'Subscriptions'
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        ordering = ['user']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscribition_model'
+            ),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F("author")),
+                name="prevent_self_subscription",
+            ),
+        ]
 
     def __str__(self):
         return f'{self.user} subscribed on {self.author}'

@@ -1,18 +1,15 @@
 import django_filters
 from recipes.models import Ingredient, Recipe, Tag
+from users.models import User
 
 
 class RecipeFilter(django_filters.FilterSet):
     tags = django_filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
-        field_name="tags__slug",
-        to_field_name="slug",
+        field_name='tags__slug',
+        to_field_name='slug',
     )
-    author = django_filters.ModelMultipleChoiceFilter(
-        queryset=Recipe.objects.all(),
-        field_name="author__id",
-        to_field_name="id",
-    )
+    author = django_filters.ModelChoiceFilter(queryset=User.objects.all())
     is_favorited = django_filters.NumberFilter(
         method='get_is_favorited'
     )
@@ -22,11 +19,12 @@ class RecipeFilter(django_filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('tags',
-                  'author',
-                  'is_favorited',
-                  'is_in_shopping_cart'
-                  )
+        fields = (
+            'tags',
+            'author',
+            'is_favorited',
+            'is_in_shopping_cart'
+        )
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user

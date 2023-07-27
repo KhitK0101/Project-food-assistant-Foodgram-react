@@ -1,76 +1,62 @@
 from django.db.models import Sum
+from djoser.views import UserViewSet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
-from rest_framework import mixins, status, viewsets, permissions
+from rest_framework import status, viewsets, permissions, response, decorators
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscription, User
 
 from .filters import RecipeFilter
+from .pagination import CustomPagination
 from .permissions import IsAdmin, IsAdminOrReadOnly
-from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipeSerializer, RecipeShortSerializer,
-                          RecipeWriteSerializer, SetPasswordSerializer,
-                          ShoppingCartSerializer, SubscriptionSerializer,
-                          SubscriptionUserSerializer, TagSerializer,
-                          UserGetSerializer, UserSingUpSerializer)
+from .serializers import (
+    FavoriteSerializer, IngredientSerializer,
+    RecipeShortSerializer, RecipeWriteSerializer,
+    ShoppingCartSerializer, SubscriptionSerializer,
+    SubscriptionUserSerializer, TagSerializer,
+    UserSingUpSerializer,
+)
+from users.models import Subscription, User
 
 
-class UserViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
-    """User, subscription and list of subscriptions."""
+class UserViewSet(UserViewSet):
+    """Вьюсет для модели пользователя."""
 
     queryset = User.objects.all()
+    serializer_class = UserSingUpSerializer
+    pagination_class = CustomPagination
 
-    def get_serializer_class(self):
-        if self.action in ('subscriptions', 'subscribe'):
-            return SubscriptionUserSerializer
-        if self.action in ('list', 'retrieve', 'me'):
-            return UserGetSerializer
-        if self.action == 'set_password':
-            return SetPasswordSerializer
-        return UserSingUpSerializer
+    @decorators.action(
+        detail=True,
+        methods=['POST', 'DELETE'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def subscribe(self, request, **kwargs):
+        user = request.user
+        author_id = self.kwargs.get('id')
+        author = get_object_or_404(User, id=author_id)
+        if request.method == 'POST':
+            serializer = SubscriptionUserSerializer(
+                author,
+                data=request.data,
+                context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            Subscription.objects.create(user=user, author=author)
+            return response.Response(serializer.data,
+                                     status=status.HTTP_201_CREATED)
+        get_object_or_404(Subscription, user=user, author=author).delete()
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(
+    @decorators.action(
         detail=False,
         methods=['GET'],
-        permission_classes=[IsAuthenticated]
-    )
-    def me(self, request):
-        user = request.user
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
-        methods=['POST'],
-        permission_classes=[IsAuthenticated]
-    )
-    def set_password(self, request):
-        user = request.user
-        data = request.data
-        serializer = self.get_serializer(user, data=data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response(
-            {
-                'detail': 'Пароль успешно изменён'
-            },
-            status=status.HTTP_204_NO_CONTENT
-        )
-
-    @action(
-        detail=True,
-        methods=['POST'],
-        permission_classes=[IsAdminOrReadOnly, IsAdmin]
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def subscribe(self, request, pk):
         user = request.user
@@ -136,7 +122,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeShortSerializer
         if self.action in ('create', 'partial_update'):
             return RecipeWriteSerializer
-        return RecipeSerializer
+        return viewsets.ModelViewSet
 
     def get_queryset(self):
         user_id = self.request.user.pk
@@ -208,7 +194,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['GET'],
         permission_classes=[IsAuthenticated]
     )
-    def download_shopping_cart(self, request):
+    def download_shopping_cart(self):
+        return self.download_shopping_cart(self.request.user)
+
+    def shopping_cart(self, request):
         ingredients = IngredientAmount.objects.filter(
             recipe__carts__user=request.user
         ).values(
