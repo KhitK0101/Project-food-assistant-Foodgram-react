@@ -9,7 +9,6 @@ from rest_framework import status, viewsets, permissions, response, decorators
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.models import Subscription, User
 
 from .filters import RecipeFilter
 from .pagination import CustomPagination
@@ -58,18 +57,6 @@ class UserViewSet(UserViewSet):
         methods=['GET'],
         permission_classes=(permissions.IsAuthenticated,)
     )
-    def subscribe(self, request, pk):
-        user = request.user
-        author = get_object_or_404(User, pk=pk)
-        data = {
-            'user': user.pk,
-            'author': author.pk
-        }
-        serializer = SubscriptionSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        serializer = self.get_serializer(author)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, pk):

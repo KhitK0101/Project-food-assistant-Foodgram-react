@@ -191,13 +191,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        ingredients_list = []
         for ingredient in data.get('recipeingredients'):
             if ingredient.get('amount') <= 0:
                 raise serializers.ValidationError(
                     'Количество не может быть меньше 1'
                 )
-            ingredients_list.append(ingredient.get('id'))
 
     @transaction.atomic
     def create_bulk_ingredients(self, ingredients, recipe):
