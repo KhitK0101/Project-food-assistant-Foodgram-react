@@ -13,12 +13,6 @@ class User(AbstractUser):
     AUTHORIZED = 'authorized'
     ADMIN = 'admin'
 
-    USER_ROLES = [
-        (GUEST, 'guest'),
-        (AUTHORIZED, 'authorized'),
-        (ADMIN, 'admin'),
-    ]
-
     email = models.EmailField(
         max_length=settings.LENGTH_EMAIL,
         blank=False,
@@ -42,10 +36,6 @@ class User(AbstractUser):
         max_length=settings.LENGTH_DATA_USER,
         blank=False,
         verbose_name='Имя',
-    )
-    password = models.CharField(
-        max_length=settings.LENGTH_DATA_USER,
-        verbose_name='Пароль',
     )
 
     class Meta:
@@ -74,7 +64,7 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        ordering = ['user']
+        ordering = ('user',)
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],

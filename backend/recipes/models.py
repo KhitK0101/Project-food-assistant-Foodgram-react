@@ -39,12 +39,6 @@ class Tag(models.Model):
         unique=True,
         verbose_name='Цвет (HEX code)',
         help_text='Пример, #4B0082',
-        validators=[
-            validators.RegexValidator(
-                regex=settings.COLOR_REGEX,
-                message=settings.NOT_COLOR_HEX
-            ),
-        ],
     )
     slug = models.SlugField(
         unique=True,
@@ -53,6 +47,7 @@ class Tag(models.Model):
     )
 
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
@@ -161,7 +156,7 @@ class IngredientAmount(models.Model):
         validators=(
             validators.MinValueValidator(
                 settings.INGREDIENT_MIN_AMOUNT,
-                message=settings.INGREDIENT_MIN_AMOUNT_ERROR
+                message='Количество ингредиентов не может быть меньше одного!'
             ),
         ),
     )
@@ -212,7 +207,7 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shopping_cart',
+        related_name='default_related_name',
         verbose_name='Добавлено в корзину',
     )
 

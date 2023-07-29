@@ -62,12 +62,8 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -119,14 +115,16 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'SERIALIZERS': {
-        'user_create': 'api.serializers.UserSingUpSerializer',
         'user': 'api.serializers.UserGetSerializer',
         'current_user': 'api.serializers.UserGetSerializer',
     },
     'PERMISSIONS': {
         'user': [
-            'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+            'rest_framework.permissions.IsAuthenticated'
         ],
+        'user_list': [
+            'rest_framework.permissions.IsAdminOrReadOnly'
+        ]
     },
 }
 
@@ -152,6 +150,5 @@ COOKING_TIME_MIN_ERROR = (
 )
 
 INGREDIENT_MIN_AMOUNT = 1
-INGREDIENT_MIN_AMOUNT_ERROR = 'Количество ингредиентов не может быть меньше одного!'
 
 PAGINATION_PAGE_SIZE = 6

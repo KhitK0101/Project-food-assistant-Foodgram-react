@@ -1,6 +1,4 @@
 from django.db import transaction
-from django.core import exceptions
-from django.contrib.auth.password_validation import validate_password
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -35,59 +33,6 @@ class UserGetSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         return (request and request.user.is_authenticated
                 and request.user.follower.filter(author=author).exists())
-
-
-class UserSingUpSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации пользователей."""
-    password = serializers.CharField(
-        style={
-            'input_type': 'password'
-        },
-        write_only=True,
-    )
-
-    class Meta:
-        model = User
-        fields = (
-            'email', 'id', 'username',
-            'first_name', 'last_name', 'password'
-        )
-
-
-class SetPasswordSerializer(serializers.Serializer):
-    """Сериализатор для установки пароля пользователя."""
-    current_password = serializers.CharField()
-    new_password = serializers.CharField()
-
-    def validate(self, data):
-        new_password = data.get('new_password')
-        try:
-            validate_password(new_password)
-        except exceptions.ValidationError as err:
-            raise serializers.ValidationError(
-                {'new_password': err.messages}
-            )
-        return super().validate(data)
-
-    def update(self, instance, validated_data):
-        current_password = validated_data.get('current_password')
-        new_password = validated_data.get('new_password')
-        if not instance.check_password(current_password):
-            raise serializers.ValidationError(
-                {
-                    'current_password': 'Неверный пароль'
-                }
-            )
-        if current_password == new_password:
-            raise serializers.ValidationError(
-                {
-                    'new_password': 'Новый пароль должен'
-                    ' отличаться от старого. '
-                }
-            )
-        instance.set_password(new_password)
-        instance.save()
-        return validated_data
 
 
 class SubscriptionUserSerializer(serializers.ModelSerializer):
@@ -190,13 +135,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'name', 'text', 'cooking_time'
         )
 
-#   def validate(self, data):
-#       for ingredient in data.get('recipeingredients'):
-#           if ingredient.get('amount') <= 0:
-#               raise serializers.ValidationError(
-#                   'Количество не может быть меньше 1'
-#               )
-#
+    def validate(self, data):
+        for ingredient in data.get('recipeingredients'):
+            if ingredient.get('amount') <= 0:
+                raise serializers.ValidationError(
+                    'Количество не может быть меньше 1'
+                )
+
     @transaction.atomic
     def create_bulk_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:
