@@ -102,7 +102,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-static/
 .env
 .venv
 env/
@@ -131,3 +130,16 @@ dmypy.json
 
 # .idea
 .idea
+
+# Миграции
+migrations/
+
+# Модули Node.js
+node_modules/
+
+# Статика и медиа
+media/
+static/
+
+# VSCode
+.vscode/
