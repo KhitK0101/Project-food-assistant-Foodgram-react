@@ -31,7 +31,7 @@ class CustomUserViewSet(UserViewSet):
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, **kwargs):
         user = request.user
@@ -54,7 +54,7 @@ class CustomUserViewSet(UserViewSet):
     @action(
         detail=False,
         methods=['GET'],
-        permission_classes=[IsAuthenticated,]
+        permission_classes=[IsAuthenticated]
     )
     def subscriptions(self, request):
         user = request.user
