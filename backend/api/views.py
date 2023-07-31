@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .filters import RecipeFilter, IngredientFilter
 from .pagination import LimitPagination
-from .permissions import IsAdminOrReadOnly, IsAuthenticated
+from .permissions import IsAuthorOrReadOnly, IsAuthenticated
 from .serializers import (
     FavoriteSerializer, IngredientSerializer,
     RecipeShortSerializer, RecipeWriteSerializer,
@@ -26,7 +26,7 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     pagination_class = LimitPagination
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
 
     @action(
         detail=True,
@@ -83,9 +83,10 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для отображения рецептов."""
-    permission_classes = [IsAdminOrReadOnly, IsAuthenticated]
+    permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
+    queryset = Recipe.objects.all()
 
     @action(detail=True,)
     def get_serializer_class(self):
@@ -93,19 +94,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeShortSerializer
         elif self in ('create', 'partial_update'):
             return RecipeWriteSerializer
-        return viewsets.ModelViewSet
-
-    def get_queryset(self):
-        return User.objects.select_related(
-            'author'
-        ).prefetch_related(
-            'ingredients', 'tags'
-        )
+        return RecipeShortSerializer
 
     @action(
         detail=True,
         methods=['POST'],
-        permission_classes=[IsAdminOrReadOnly, IsAuthenticated]
+        permission_classes=[IsAuthorOrReadOnly, IsAuthenticated]
     )
     def favorite(self, request, pk):
         user = request.user

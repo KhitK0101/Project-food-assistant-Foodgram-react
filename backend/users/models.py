@@ -9,10 +9,6 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name',)
 
-    GUEST = 'guest'
-    AUTHORIZED = 'authorized'
-    ADMIN = 'admin'
-
     email = models.EmailField(
         max_length=settings.LENGTH_EMAIL,
         blank=False,
