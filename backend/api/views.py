@@ -35,8 +35,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscribe(self, request, **kwargs):
         user = request.user
-        author_id = self.kwargs.get('id')
-        author = get_object_or_404(User, id=author_id)
+        author = get_object_or_404(User, id=kwargs['pk'])
         if request.method == 'POST':
             serializer = SubscriptionUserSerializer(
                 author,
@@ -48,7 +47,9 @@ class CustomUserViewSet(UserViewSet):
             return response.Response(serializer.data,
                                      status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            get_object_or_404(Subscription, user=user, author=author).delete()
+            get_object_or_404(
+                Subscription, user=user.id, author=author
+            ).delete()
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -58,8 +59,8 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        subscriptions = User.objects.filter(
-            subscribing__user=user
+        subscriptions = Subscription.objects.filter(
+            user=user.id
         ).prefetch_related('recipes')
         page = self.paginate_queryset(subscriptions)
         serializer = self.get_serializer(page, many=True)
@@ -88,7 +89,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
     queryset = Recipe.objects.all()
 
-    @action(detail=True,)
     def get_serializer_class(self):
         if self in ('favorite', 'shopping_cart'):
             return RecipeShortSerializer
@@ -153,11 +153,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         }
         return Response(message, status=status.HTTP_204_NO_CONTENT)
 
-    @action(
-        detail=False,
-        methods=['GET'],
-        permission_classes=[IsAuthenticated]
-    )
     def list_shopping_cart(self, request):
         ingredients = IngredientAmount.objects.filter(
             recipe__carts__user=request.user
@@ -174,12 +169,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             unit = ingredient['ingredient__measurement_unit']
             amount = ingredient['ingredient_amount']
             shopping_list.append(f'\n{name} - {amount}, {unit}')
-        return self.download_shopping_cart(self.request.user)
+        return shopping_list
 
-    def download_shopping_cart(self):
+    @action(
+        detail=False,
+        methods=['GET'],
+        permission_classes=[IsAuthenticated]
+    )
+    def download_shopping_cart(self, request):
         response = HttpResponse(
-            self.list_shopping_cart, content_type='text/plain'
+            RecipeViewSet.list_shopping_cart, content_type='text/plain',
         )
         response['Content-Disposition'] = \
-            'attachment; filename="shopping_cart.txt"'
+            'attachment; filename="shopping_list.txt"'
         return response
+#   Здесь осталась ошибка как мне сказали в 181 строке но как это
+#   исправить я так и не понял.

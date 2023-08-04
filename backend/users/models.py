@@ -67,8 +67,8 @@ class Subscription(models.Model):
                 name='unique_subscribition_model'
             ),
             models.CheckConstraint(
-                check=~models.Q(user=models.F("author")),
-                name="prevent_self_subscription",
+                check=~models.Q(user=models.F('author')),
+                name='prevent_self_subscription',
             ),
         ]
 
