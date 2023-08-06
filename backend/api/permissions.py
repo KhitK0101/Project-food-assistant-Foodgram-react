@@ -1,8 +1,7 @@
-from rest_framework.permissions import (BasePermission,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import BasePermission
 
 
-class IsAuthenticated(IsAuthenticatedOrReadOnly):
+class IsAuthenticated:
     def has_permission(self, request, view):
         return (
             request.method in ('GET')

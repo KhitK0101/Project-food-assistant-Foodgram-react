@@ -62,12 +62,8 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -143,7 +139,6 @@ NOT_ALLOWED_CHAR_NAME = ('{chars} недопустимые символы '
 NOT_ALLOWED_ME = ('Невозможно создать пользователя с '
                   'именем: << {username} >> - имя запрещено!')
 
-COLOR_REGEX = r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 NOT_COLOR_HEX = 'Цвет не в формате HEX'
 LENGTH_COLOR = 7
 LENGTH_NAME_COLOR = 50

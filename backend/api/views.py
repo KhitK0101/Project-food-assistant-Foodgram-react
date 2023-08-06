@@ -46,11 +46,10 @@ class CustomUserViewSet(UserViewSet):
             Subscription.objects.create(user=user, author=author)
             return response.Response(serializer.data,
                                      status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            get_object_or_404(
+        elif get_object_or_404(
                 Subscription, user=user.id, author=author
-            ).delete()
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
+            ).delete():
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -84,15 +83,15 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для отображения рецептов."""
-    permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
+    permission_classes = (IsAuthorOrReadOnly, IsAuthenticated, )
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     queryset = Recipe.objects.all()
 
     def get_serializer_class(self):
-        if self in ('favorite', 'shopping_cart'):
+        if self.action in ('favorite', 'shopping_cart'):
             return RecipeShortSerializer
-        elif self in ('create', 'partial_update'):
+        elif self.action in ('create', 'partial_update'):
             return RecipeWriteSerializer
         return RecipeShortSerializer
 
@@ -118,11 +117,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def unfavorite(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        Favorite.objects.filter(user=user, recipe=recipe).delete()
-        message = {
-            'detail': 'Рецепт успешно удален из избранного'
-        }
-        return Response(message, status=status.HTTP_204_NO_CONTENT)
+        favorite = Favorite.objects.filter(user=user, recipe=recipe)
+        if favorite:
+            favorite.delete()
+            message = {
+                'detail': 'Рецепт успешно удален из избранного'
+            }
+            return Response(message, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+                {'errors': 'Рецепт не добавлен в избранное'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     @action(
         detail=True,
@@ -146,12 +151,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def delete_shopping_cart(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-        ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
-        message = {
-            'detail':
-                'Вы успешно удалили рецепт из корзины'
-        }
-        return Response(message, status=status.HTTP_204_NO_CONTENT)
+        shopping_cart = ShoppingCart.objects.filter(user=user, recipe=recipe)
+        if shopping_cart:
+            shopping_cart.delete()
+            message = {
+                'detail':
+                    'Вы успешно удалили рецепт из корзины'
+            }
+            return Response(message, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+                {'errors': 'Рецепт не добавлен в корзину'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def list_shopping_cart(self, request):
         ingredients = IngredientAmount.objects.filter(
@@ -177,11 +188,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        response = HttpResponse(
-            RecipeViewSet.list_shopping_cart, content_type='text/plain',
-        )
-        response['Content-Disposition'] = \
-            'attachment; filename="shopping_list.txt"'
-        return response
-#   Здесь осталась ошибка как мне сказали в 181 строке но как это
-#   исправить я так и не понял.
+       response = HttpResponse(
+            self.list_shopping_cart(request), content_type='text/plain',
+       )
+       response['Content-Disposition'] = (
+           'attachment; filename="shopping_list.txt"'
+       )
+       return response

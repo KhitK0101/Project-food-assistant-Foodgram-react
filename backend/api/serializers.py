@@ -172,6 +172,18 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     'error': 'Время приготовления не может быть меньше минуты'
                 }
             )
+        tags = data['tags']
+        if not tags:
+            raise serializers.ValidationError(
+                'Нужно указать хотя бы 1 тег.'
+            )
+        tags_amount = set()
+        for tag in tags:
+            if tag in tags_amount:
+                raise serializers.ValidationError(
+                    'Такой тег уже существует, добавьте новый!'
+                )
+            tags_amount.add(tag)
         ingredients_list = []
         ingredients_amount = data.get('ingredients_amount')
         for ingredient in ingredients_amount:

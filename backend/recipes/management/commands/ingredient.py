@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, **kwargs):
         with open(
-            os.path.join(settings.BASE_DIR, 'ingredients.csv'), 'r',
+            os.path.join(settings.BASE_DIR, 'data/ingredients.csv'), 'r',
             encoding='UTF-8',
         ) as file:
             reader = csv.reader(file, delimiter=',')

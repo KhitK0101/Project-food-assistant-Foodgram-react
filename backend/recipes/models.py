@@ -142,7 +142,7 @@ class IngredientAmount(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         related_name='ingredients_amount',
-        verbose_name='Ингрединт',
+        verbose_name='ингрединт',
     )
     recipe = models.ForeignKey(
         Recipe,
@@ -162,8 +162,8 @@ class IngredientAmount(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Количество ингредиента'
-        verbose_name_plural = 'Количество ингредиентов'
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'ингредиенты'
         constraints = [
             models.UniqueConstraint(fields=['recipe', 'ingredient'],
                                     name='unique_ingredient')
