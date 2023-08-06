@@ -15,10 +15,9 @@ class Command(BaseCommand):
             os.path.join(settings.BASE_DIR, 'data/ingredients.csv'), 'r',
             encoding='UTF-8',
         ) as file:
-            reader = csv.reader(file, delimiter=',')
-            Ingredient.objects.bulk_create(
-                Ingredient(**data) for data in reader
-            )
+            reader = csv.DictReader(file, delimiter=',')
+            ingredients = [Ingredient(**data) for data in reader]
+            Ingredient.objects.bulk_create(ingredients)
         self.stdout.write(
             self.style.SUCCESS('Ингредиенты загружены в БД')
         )

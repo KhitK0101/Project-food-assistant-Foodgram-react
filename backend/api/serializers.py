@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingCart, Tag)
+                            ShoppingCart, Tag, User)
 from users.models import Subscription, User
 
 
@@ -20,19 +20,34 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 class UserGetSerializer(serializers.ModelSerializer):
     """Сериализатор для всех пользователей."""
-    is_subscribed = serializers.SerializerMethodField()
+
+    image = Base64ImageField()
+
+    subscribed = serializers.SerializerMethodField()
+    author_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Recipe
         fields = (
-            'email', 'id', 'username',
-            'first_name', 'last_name', 'is_subscribed'
+            'id', 'name', 'image', 'cooking_time', 'subscribed',
+            'author_subscribed'
         )
 
-    def get_is_subscribed(self, author):
-        request = self.context.get('request')
-        return (request and request.user.is_authenticated
-                and request.user.follower.filter(author=author).exists())
+    def get_subscribed(self, recipe):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Subscription.objects.filter(
+                user=user, author=recipe.author
+            ).exists()
+        return False
+
+    def get_author_subscribed(self, recipe):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Subscription.objects.filter(
+                user=recipe.author, author=user
+            ).exists()
+        return False
 
 
 class SubscriptionUserSerializer(serializers.ModelSerializer):
