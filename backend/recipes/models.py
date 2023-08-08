@@ -22,7 +22,7 @@ class Ingredient(models.Model):
     class Meta:
         ordering = ('name',)
         verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self):
         return f'{self.name}, {self.measurement_unit}'
@@ -213,7 +213,7 @@ class ShoppingCart(models.Model):
 
     class Meta:
         verbose_name = 'Корзина'
-        verbose_name_plural = 'Корзины'
+        verbose_name_plural = 'Корзины пользователей'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe',),
