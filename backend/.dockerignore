@@ -1,4 +1,13 @@
-venv
+venv/
+env/
 .git
+
+__pycache__/
+
+.idea
+.vscode
+
+.gitignore
 db.sqlite3
 README.md
+Dockerfile
