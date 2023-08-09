@@ -2,6 +2,7 @@ from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.fields import HiddenField
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
@@ -85,8 +86,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        request = self.context.get('request')
-        if request.user == data['author']:
+        if data['user'] == data['author']:
             raise serializers.ValidationError(
                 'Нельзя подписываться на самого себя!'
             )
@@ -133,10 +133,13 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор модели рецепта (создания рецепта)."""
 
+    image = Base64ImageField()
+    author = HiddenField(default=serializers.CurrentUserDefault())
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all()
     )
+    ingredients = IngredientAmountSerializer(many=True)
 
     class Meta:
         model = Recipe
@@ -144,7 +147,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'id', 'image', 'tags', 'author', 'ingredients',
             'name', 'text', 'cooking_time'
         )
-        extra_kwargs = {'image': {'required': False}}
 
     @transaction.atomic
     def create_bulk_ingredients(self, ingredients, recipe):
@@ -218,15 +220,18 @@ class RecipeFullSerializer(serializers.ModelSerializer):
     """Сериализатор модели Recipe для GET-запросов."""
 
     image = Base64ImageField()
-    tags = serializers.StringRelatedField(many=True)
-    author = serializers.ReadOnlyField(source='author.username')
-    ingredients = IngredientSerializer(many=True)
+    tags = TagSerializer(many=True)
+    author = UserGetSerializer(read_only=True)
+    ingredients = IngredientAmountSerializer(
+        source='ingredients_amount', many=True
+    )
 
     class Meta:
         model = Recipe
         fields = (
             'id', 'name', 'image', 'cooking_time', 'tags',
-            'author', 'ingredients', 'text'
+            'author', 'ingredients', 'text', 'is_favorited',
+            'is_in_shopping_cart'
         )
 
 

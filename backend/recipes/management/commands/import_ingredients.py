@@ -7,12 +7,12 @@ from django.core.management.base import BaseCommand
 from recipes.models import Ingredient
 
 
-class import_ingredients(BaseCommand):
+class Command(BaseCommand):
     help = 'Импорт ингредиентов в БД'
 
     def handle(self, **kwargs):
         with open(
-            os.path.join(settings.BASE_DIR, '../data/ingredients.csv'), 'r',
+            os.path.join(settings.BASE_DIR, 'data/ingredients.csv'), 'r',
             encoding='UTF-8',
         ) as file:
             reader = csv.DictReader(file, delimiter=',')

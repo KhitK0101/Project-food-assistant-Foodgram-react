@@ -36,7 +36,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscribe(self, request, **kwargs):
         user = request.user
-        author = get_object_or_404(User, id=kwargs['pk'])
+        author = get_object_or_404(User, id=kwargs['id'])
         if request.method == 'POST':
             serializer = SubscriptionSerializer(
                 data={'user': user.id, 'author': author.id}
@@ -48,12 +48,13 @@ class CustomUserViewSet(UserViewSet):
         subscription = Subscription.objects.filter(user=user, author=author)
 
         if subscription.exists():
-            deleted, _info = subscription.delete()
-            if deleted:
+            deleted = subscription.delete()
+            if deleted[0] > 0:
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(
-            {"detail": "Not found."}, status=status.HTTP_400_BAD_REQUEST
+            {'detail': 'Подписка не найдена или уже была удалена.'},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
     @action(
@@ -126,15 +127,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         deleted_count, _ = items_list.delete()
 
         if deleted_count > 0:
-            message = {
-                'detail': message
-            }
-            return Response(message, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(
-                {'errors': f'Рецепт не добавлен в {message.lower()}'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {'errors': f'Рецепт не добавлен в {message.lower()}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @action(
         detail=True,
