@@ -1,11 +1,13 @@
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.fields import HiddenField
+from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingCart, Tag)
+from recipes.models import (
+    Favorite, Ingredient, IngredientAmount, Recipe,
+    ShoppingCart, Tag
+)
 from users.models import Subscription, User
 
 
@@ -149,9 +151,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     @transaction.atomic
-    def create_bulk_ingredients(self, ingredients, recipe):
+    def create_bulk_ingredients(self, recipe, tags, ingredients):
         for ingredient in ingredients:
-            serializers.ModelSerializer.objects.get_or_create(
+            IngredientAmount.objects.get_or_create(
                 recipe=recipe,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount']
@@ -190,23 +192,21 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Нужно указать хотя бы 1 тег.'
             )
-        tags_amount = set()
-        for tag in tags:
-            if tag in tags_amount:
-                raise serializers.ValidationError(
-                    'Такой тег уже существует, добавьте новый!'
-                )
-            tags_amount.add(tag)
+        tags_set = set(tags)
+        if len(tags) != len(tags_set):
+            raise serializers.ValidationError('Такой тег уже существует, добавьте новый!')
         ingredients_list = []
         ingredients_amount = data.get('ingredients_amount')
-        for ingredient in ingredients_amount:
-            if ingredient.get('amount') <= 0:
-                raise serializers.ValidationError(
-                    {
-                        'error': 'Число ингредиентов не может быть меньше 1'
-                    }
-                )
-            ingredients_list.append(ingredient['ingredient']['id'])
+        if ingredients_amount is not None:
+            for ingredient in ingredients_amount:
+                if ingredient.get('amount') <= 0:
+                    raise serializers.ValidationError(
+                        {
+                            'error': 'Число ингредиентов не может быть меньше 1'
+                        }
+                    )
+                ingredients_list.append(ingredient['ingredient']['id'])
+
         if len(ingredients_list) > len(set(ingredients_list)):
             raise serializers.ValidationError(
                 {
@@ -225,6 +225,8 @@ class RecipeFullSerializer(serializers.ModelSerializer):
     ingredients = IngredientAmountSerializer(
         source='ingredients_amount', many=True
     )
+    is_favorited = serializers.BooleanField(read_only=True)
+    is_in_shopping_cart = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Recipe

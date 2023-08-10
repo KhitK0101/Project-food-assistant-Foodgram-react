@@ -1,16 +1,19 @@
 from django.db.models import Sum
-from djoser.views import UserViewSet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from djoser.views import UserViewSet
 
-from .filters import RecipeFilter, IngredientFilter
+from recipes.models import (
+    Favorite, Ingredient, IngredientAmount, Recipe,
+    ShoppingCart, Tag
+)
+from users.models import Subscription, User
+from .filters import IngredientFilter, RecipeFilter
 from .pagination import LimitPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -18,8 +21,8 @@ from .serializers import (
     RecipeShortSerializer, RecipeWriteSerializer,
     ShoppingCartSerializer, RecipeFullSerializer,
     SubscriptionSerializer, TagSerializer,
+    SubscriptionUserSerializer
 )
-from users.models import Subscription, User
 
 
 class CustomUserViewSet(UserViewSet):
@@ -37,25 +40,27 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, **kwargs):
         user = request.user
         author = get_object_or_404(User, id=kwargs['id'])
+        
         if request.method == 'POST':
             serializer = SubscriptionSerializer(
                 data={'user': user.id, 'author': author.id}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+            response_serializer = SubscriptionUserSerializer(serializer.instance)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
         subscription = Subscription.objects.filter(user=user, author=author)
-
-        if subscription.exists():
-            deleted = subscription.delete()
-            if deleted[0] > 0:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        deleted = subscription.delete()
+        
+        if deleted[0]:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(
             {'detail': 'Подписка не найдена или уже была удалена.'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
 
     @action(
         detail=False,
@@ -64,11 +69,9 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        subscriptions = Subscription.objects.filter(
-            user=user.id
-        ).prefetch_related('recipes')
+        subscriptions = Subscription.objects.filter(user=user.id).prefetch_related('recipes')
         page = self.paginate_queryset(subscriptions)
-        serializer = self.get_serializer(page, many=True)
+        serializer = SubscriptionUserSerializer(page, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
 
@@ -103,9 +106,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeShortSerializer
         elif self.action in ('create', 'partial_update'):
             return RecipeWriteSerializer
-        elif self.action == 'retrieve':  # Если это GET-запрос
+        elif self.action == 'retrieve':
             return RecipeFullSerializer
-        return RecipeShortSerializer  # Если это GET-запрос на список
+        return RecipeFullSerializer
 
     def add_to_list(self, request, pk, serializer_class, model):
         user = request.user
