@@ -194,17 +194,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         tags_set = set(tags)
         if len(tags) != len(tags_set):
-            raise serializers.ValidationError('Такой тег уже существует, добавьте новый!')
+            raise serializers.ValidationError(
+                'Такой тег уже существует, добавьте новый!'
+            )
         ingredients_list = []
         ingredients_amount = data.get('ingredients_amount')
         if ingredients_amount is not None:
             for ingredient in ingredients_amount:
                 if ingredient.get('amount') <= 0:
-                    raise serializers.ValidationError(
-                        {
-                            'error': 'Число ингредиентов не может быть меньше 1'
-                        }
-                    )
+                    raise serializers.ValidationError({
+                        'error': 'Число ингредиентов не может быть меньше 1'
+                    })
                 ingredients_list.append(ingredient['ingredient']['id'])
 
         if len(ingredients_list) > len(set(ingredients_list)):

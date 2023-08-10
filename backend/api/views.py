@@ -40,19 +40,23 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, **kwargs):
         user = request.user
         author = get_object_or_404(User, id=kwargs['id'])
-        
+
         if request.method == 'POST':
             serializer = SubscriptionSerializer(
                 data={'user': user.id, 'author': author.id}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            response_serializer = SubscriptionUserSerializer(serializer.instance)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        
+            response_serializer = SubscriptionUserSerializer(
+                serializer.instance
+            )
+            return Response(
+                response_serializer.data, status=status.HTTP_201_CREATED
+            )
+
         subscription = Subscription.objects.filter(user=user, author=author)
         deleted = subscription.delete()
-        
+
         if deleted[0]:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -61,7 +65,6 @@ class CustomUserViewSet(UserViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-
     @action(
         detail=False,
         methods=['GET'],
@@ -69,9 +72,12 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        subscriptions = Subscription.objects.filter(user=user.id).prefetch_related('recipes')
+        subscriptions = Subscription.objects.filter(
+            user=user.id).prefetch_related('recipes')
         page = self.paginate_queryset(subscriptions)
-        serializer = SubscriptionUserSerializer(page, many=True, context={'request': request})
+        serializer = SubscriptionUserSerializer(
+            page, many=True, context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)
 
 
