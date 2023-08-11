@@ -47,11 +47,9 @@ class CustomUserViewSet(UserViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            response_serializer = SubscriptionUserSerializer(
-                serializer.instance
-            )
+            serializer_author = SubscriptionUserSerializer(author)
             return Response(
-                response_serializer.data, status=status.HTTP_201_CREATED
+                serializer_author.data, status=status.HTTP_201_CREATED
             )
 
         subscription = Subscription.objects.filter(user=user, author=author)
@@ -72,8 +70,7 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        subscriptions = Subscription.objects.filter(
-            user=user.id).prefetch_related('recipes')
+        subscriptions = Subscription.objects.filter(user=user)
         page = self.paginate_queryset(subscriptions)
         serializer = SubscriptionUserSerializer(
             page, many=True, context={'request': request}
@@ -104,8 +101,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly, )
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    queryset = Recipe.objects.all()
     pagination_class = LimitPagination
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        request = self.request
+        if request and request.user.is_authenticated:
+            queryset = Recipe.objects.add_user_annotations(
+                queryset=queryset, user_id=request.user.id
+            )
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ('favorite', 'shopping_cart'):
