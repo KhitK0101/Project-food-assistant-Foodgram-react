@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Exists, OuterRef, Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -47,7 +47,9 @@ class CustomUserViewSet(UserViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            serializer_author = SubscriptionUserSerializer(author)
+            serializer_author = SubscriptionUserSerializer(
+                author, context={'request': request}
+            )
             return Response(
                 serializer_author.data, status=status.HTTP_201_CREATED
             )
@@ -69,8 +71,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly]
     )
     def subscriptions(self, request):
-        user = request.user
-        subscriptions = Subscription.objects.filter(user=user)
+        subscriptions = Subscription.objects.filter(following__user=request.user)
         page = self.paginate_queryset(subscriptions)
         serializer = SubscriptionUserSerializer(
             page, many=True, context={'request': request}
@@ -104,11 +105,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = LimitPagination
 
     def get_queryset(self):
+        user = self.request.user
         queryset = Recipe.objects.all()
-        request = self.request
-        if request and request.user.is_authenticated:
-            queryset = Recipe.objects.add_user_annotations(
-                queryset=queryset, user_id=request.user.id
+
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                is_favorited=Exists(Favorite.objects.filter(
+                    user=user, recipe__pk=OuterRef('pk'))
+                ),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
+                    user=user, recipe__pk=OuterRef('pk'))
+                )
+            )
+        else:
+            queryset = queryset.annotate(
+                is_favorited=Value(False, output_field=BooleanField()),
+                is_in_shopping_cart=Value(False, output_field=BooleanField())
             )
         return queryset
 
