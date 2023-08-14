@@ -62,7 +62,7 @@ class SubscriptionUserSerializer(serializers.ModelSerializer):
         recipes = obj.recipes.all()
         if limit:
             recipes = recipes[:int(limit)]
-        serializer = serializers.ModelSerializer(
+        serializer = RecipeShortSerializer(
             recipes, many=True, read_only=True
         )
         return serializer.data
@@ -151,26 +151,22 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     @transaction.atomic
-    def create_bulk_ingredients(self, recipe, tags, ingredients):
-        ingredient_amounts = [
-            IngredientAmount(
-                recipe=recipe,
-                ingredient_id=ingredient_data['ingredient'].id,
-                amount=ingredient_data['amount']
-            )
-            for ingredient_data in ingredients
-        ]
-        IngredientAmount.objects.bulk_create(ingredient_amounts)
-        recipe.tags.set(tags)
-
-    @transaction.atomic
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         user = self.context['request'].user
         validated_data['author'] = user
         recipe = Recipe.objects.create(**validated_data)
-        self.create_bulk_ingredients(recipe, tags, ingredients)
+
+        recipe.tags.set(tags)
+
+        for ingredient_data in ingredients:
+            IngredientAmount.objects.create(
+                recipe=recipe,
+                ingredient=ingredient_data['ingredient'],
+                amount=ingredient_data['amount']
+            )
+
         return recipe
 
     @transaction.atomic
@@ -183,6 +179,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         self.create_bulk_ingredients(recipe=instance,
                                      ingredients=ingredients)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        serializer = RecipeFullSerializer(instance, context=self.context)
+        return serializer.data
 
     def validate(self, data):
         cooking_time = data.get('cooking_time')
