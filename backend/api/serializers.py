@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import HiddenField
@@ -156,17 +157,25 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         user = self.context['request'].user
         validated_data['author'] = user
-        recipe = Recipe.objects.create(**validated_data)
 
+        recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
 
-        for ingredient_data in ingredients:
-            IngredientAmount.objects.create(
-                recipe=recipe,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount']
-            )
+        ingredient_list = []
 
+        for ingredient_data in ingredients:
+            ingredient_instance = get_object_or_404(
+                Ingredient, pk=ingredient_data.get('id')
+            )
+            amount = ingredient_data.get('amount')
+            ingredient = IngredientAmount(
+                recipe=recipe,
+                ingredient=ingredient_instance,
+                amount=amount
+            )
+            ingredient_list.append(ingredient)
+
+        IngredientAmount.objects.bulk_create(ingredient_list)
         return recipe
 
     @transaction.atomic
@@ -181,7 +190,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        serializer = RecipeFullSerializer(instance, context=self.context)
+        recipe = get_object_or_404(Recipe, id=instance.id)
+        recipe.is_favorited = recipe.is_favorited_field()
+        recipe.is_in_shopping_cart = recipe.is_in_shopping_cart_field()
+
+        serializer = RecipeFullSerializer(recipe, context=self.context)
         return serializer.data
 
     def validate(self, data):
