@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import HiddenField
@@ -162,10 +161,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             ingredients_all.append(new_ingredient)
         Ingredient.objects.bulk_create(ingredients_all)
 
-    @transaction.atomic 
-    def create(self, validated_data): 
-        tags = validated_data.pop('tags') 
-        ingredients = validated_data.pop('ingredients') 
+    @transaction.atomic
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         self.add_ingredients(recipe, ingredients)
