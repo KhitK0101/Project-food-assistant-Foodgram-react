@@ -152,30 +152,23 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     @transaction.atomic
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-        user = self.context['request'].user
-        validated_data['author'] = user
+    def create_bulk_ingredients(self, recipe, ingredients):
+        ingredients_all = []
+        for ingredient in ingredients:
+            new_ingredient = IngredientAmount(
+                recipe=recipe, ingredient_id=ingredient.get('id'),
+                amount=ingredient.get('amount')
+            )
+            ingredients_all.append(new_ingredient)
+        Ingredient.objects.bulk_create(ingredients_all)
 
+    @transaction.atomic 
+    def create(self, validated_data): 
+        tags = validated_data.pop('tags') 
+        ingredients = validated_data.pop('ingredients') 
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-
-        ingredient_list = []
-
-        for ingredient_data in ingredients:
-            ingredient_instance = get_object_or_404(
-                Ingredient, pk=ingredient_data.get('id')
-            )
-            amount = ingredient_data.get('amount')
-            ingredient = IngredientAmount(
-                recipe=recipe,
-                ingredient=ingredient_instance,
-                amount=amount
-            )
-            ingredient_list.append(ingredient)
-
-        IngredientAmount.objects.bulk_create(ingredient_list)
+        self.add_ingredients(recipe, ingredients)
         return recipe
 
     @transaction.atomic
@@ -189,13 +182,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                                      ingredients=ingredients)
         return super().update(instance, validated_data)
 
-    def to_representation(self, instance):
-        recipe = get_object_or_404(Recipe, id=instance.id)
-        recipe.is_favorited = recipe.is_favorited_field()
-        recipe.is_in_shopping_cart = recipe.is_in_shopping_cart_field()
-
-        serializer = RecipeFullSerializer(recipe, context=self.context)
-        return serializer.data
+    def to_representation(self, recipe):
+        return RecipeFullSerializer(
+            recipe, context={'request': self.context.get('request')}
+        ).data
 
     def validate(self, data):
         cooking_time = data.get('cooking_time')
