@@ -116,7 +116,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
-        source='ingredient.id'
     )
     name = serializers.CharField(
         source='ingredient.name',
@@ -132,6 +131,15 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = IngredientAmount
+        fields = ['id', 'amount']
+
+
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор модели рецепта (создания рецепта)."""
 
@@ -141,7 +149,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Tag.objects.all()
     )
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = AddIngredientToRecipeSerializer(many=True)
 
     class Meta:
         model = Recipe
@@ -150,7 +158,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'name', 'text', 'cooking_time'
         )
 
-    @transaction.atomic
     def create_bulk_ingredients(self, recipe, ingredients):
         ingredients_all = []
         for ingredient in ingredients:
@@ -159,7 +166,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 amount=ingredient.get('amount')
             )
             ingredients_all.append(new_ingredient)
-        Ingredient.objects.bulk_create(ingredients_all)
+        IngredientAmount.objects.bulk_create(ingredients_all)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -167,7 +174,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.add_ingredients(recipe, ingredients)
+        self.create_bulk_ingredients(recipe, ingredients)
         return recipe
 
     @transaction.atomic
