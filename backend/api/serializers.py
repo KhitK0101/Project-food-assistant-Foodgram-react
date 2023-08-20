@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404 
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import HiddenField
@@ -9,6 +10,7 @@ from recipes.models import (
     ShoppingCart, Tag
 )
 from users.models import Subscription, User
+#from api.views import RecipeViewSet
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
@@ -162,7 +164,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_all = []
         for ingredient in ingredients:
             new_ingredient = IngredientAmount(
-                recipe=recipe, ingredient_id=ingredient.get('id'),
+                recipe=recipe, ingredient=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
             ingredients_all.append(new_ingredient)
@@ -188,7 +190,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                                      ingredients=ingredients)
         return super().update(instance, validated_data)
 
-    def to_representation(self, recipe):
+    def to_representation(self, instance):
+        queryset = Recipe.objects.all()
+#        queryset = RecipeViewSet.get_queryset()
+        recipe = get_object_or_404(queryset, id=instance.id)
+
         return RecipeFullSerializer(
             recipe, context={'request': self.context.get('request')}
         ).data
