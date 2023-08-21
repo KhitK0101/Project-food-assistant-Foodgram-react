@@ -10,7 +10,6 @@ from recipes.models import (
     ShoppingCart, Tag
 )
 from users.models import Subscription, User
-# from api.views import RecipeViewSet
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
@@ -191,10 +190,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        queryset = Recipe.objects.all()
-#        queryset = RecipeViewSet.get_queryset()
-        recipe = get_object_or_404(queryset, id=instance.id)
-
+        queryset = Recipe.objects.filter(id=instance.id)
+        recipe = get_object_or_404(queryset)
+    
         return RecipeFullSerializer(
             recipe, context={'request': self.context.get('request')}
         ).data

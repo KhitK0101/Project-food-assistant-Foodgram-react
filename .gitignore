@@ -132,7 +132,7 @@ dmypy.json
 .idea
 
 # Миграции
-migrations/
+# migrations/
 
 # Модули Node.js
 node_modules/

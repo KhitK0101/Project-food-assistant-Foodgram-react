@@ -12,7 +12,6 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
-    entrypoint: ./entrypoint.sh
     volumes:
      - static_value:/app/static/
      - media_value:/app/media/
