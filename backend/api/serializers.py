@@ -190,8 +190,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        queryset = Recipe.objects.filter(id=instance.id)
-        recipe = get_object_or_404(queryset)
+        queryset = Ingredient.objects.get_queryset()
+        recipe = get_object_or_404(queryset, id=instance.id)
 
         return RecipeFullSerializer(
             recipe, context={'request': self.context.get('request')}
