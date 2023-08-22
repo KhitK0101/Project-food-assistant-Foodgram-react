@@ -190,7 +190,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        queryset = Ingredient.objects.get_queryset()
+        queryset = Recipe.objects.add_user_annotations(
+            self.context['request'].user.id
+        )
         recipe = get_object_or_404(queryset, id=instance.id)
 
         return RecipeFullSerializer(
