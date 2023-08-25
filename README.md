@@ -148,7 +148,25 @@ ERROR: for nginx  Cannot start service nginx: failed to create task for containe
 unable to start container process: error during container init: error mounting 
 "/home/yc-user/foodgram/nginx.conf" to rootfs at "/etc/nginx/conf.d/default.conf": mount /home/yc-user/foodgram/nginx.conf:/etc/nginx/conf.d/default.conf (via /proc/self/fd/6), flags: 0x5000: not a directory: unknown: Are you trying to mount a directory onto a file (or vice-versa)? Check if the specified host path 
 exists and is the expected type
-ERROR: Encountered errors while bringing up the project.-->
+ERROR: Encountered errors while bringing up the project.
+
+
+Если запускать локально то перед запуском контейнеров выдает вот это сообщение: $ docker-compose up -d
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+time="2023-08-25T16:39:44+03:00" level=warning msg="The \"h4i0s\" variable is not set. Defaulting to a blank string."
+[+] Running 16/16
+ ✔ nginx 6 layers [⣿⣿⣿⣿⣿⣿]      0B/0B      Pulled                        10.7s 
+   ✔ b380bbd43752 Pull complete                                           7.3s 
+   ✔ fca7e12d1754 Pull complete                                           8.1s 
+   ✔ 745ab57616cb Pull complete                                           8.2s 
+   ✔ a4723e260b6f Pull complete                                           8.2s 
+   ✔ 1c84ebdff681 Pull complete                                           8.2s 
+   ✔ 858292fd2e56 Pull complete 
+   и h4i0s содержится в секретном ключе, я не совсем понимаю как это работает(.env.example)-->
 
 ### Над проектом работали: 
 - Frontend - https://github.com/yandex-praktikum/foodgram-project-react
