@@ -129,7 +129,27 @@ sudo docker-compose exec backend python manage.py makemigrations users
 sudo docker-compose exec backend python manage.py migrate
 sudo docker-compose exec backend python manage.py makemigrations recipes
 sudo docker-compose exec backend python manage.py migrate
+sudo docker-compose exec web python manage.py collectstatic --no-input
+sudo docker-compose exec web python manage.py createsuperuser
 ```
+##### Пример проекта доступен по https://foodgrambykhit.sytes.net/ или http://84.201.179.250/ . Документация к API - http://84.201.179.250/api/docs/.
+
+<!--Логин и пароль создать не получается потому что при sudo docker-compose up вылезает предупреждение и сообщение: ~/foodgram$ sudo docker-compose up -d
+Recreating foodgram-foodgram-db-1 ... done
+Recreating foodgram-backend-1     ... done
+Recreating foodgram-frontend-1    ... done
+Recreating foodgram-nginx-1       ... error
+
+ERROR: for foodgram-nginx-1  Cannot start service nginx: failed to create task 
+for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: error mounting "/home/yc-user/foodgram/nginx.conf" to rootfs at "/etc/nginx/conf.d/default.conf": mount /home/yc-user/foodgram/nginx.conf:/etc/nginx/conf.d/default.conf (via /proc/self/fd/6), flags: 0x5000: not a directory: unknown: Are you 
+trying to mount a directory onto a file (or vice-versa)? Check if the specified host path exists and is the expected type
+
+ERROR: for nginx  Cannot start service nginx: failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: 
+unable to start container process: error during container init: error mounting 
+"/home/yc-user/foodgram/nginx.conf" to rootfs at "/etc/nginx/conf.d/default.conf": mount /home/yc-user/foodgram/nginx.conf:/etc/nginx/conf.d/default.conf (via /proc/self/fd/6), flags: 0x5000: not a directory: unknown: Are you trying to mount a directory onto a file (or vice-versa)? Check if the specified host path 
+exists and is the expected type
+ERROR: Encountered errors while bringing up the project.-->
+
 ### Над проектом работали: 
 - Frontend - https://github.com/yandex-praktikum/foodgram-project-react
 - Backend - https://github.com/KhitK0101
