@@ -46,28 +46,71 @@ SECRET_KEY = <секретный ключ>
 cd ../backend
 pip install -r requirements.txt
 ```
-Создайте миграции: 
+Также будет необходимо заменить 
+DATABASES в backend/foodgram/settings:
 ```
-docker-compose exec backend python manage.py migrate --noinput
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 ```
-Соберите статику проекта командой:
+Перед запуском проекта, необходимо выполнить миграции. В терминале из коневого каталога выполните:
 ```
-sudo docker-compose exec web python manage.py collectstatic --no-input
+python3 manage.py migrate
 ```
-Создайте суперпользователя Django:
+Для запуска Django сервера используйте команду
 ```
-sudo docker-compose exec web python manage.py createsuperuser
+python manage.py runserver
 ```
-Загрузите тестовые данные в базу данных командой: 
-```
-sudo docker -compose exec backend python manage.py loaddata dump.json
-```
-
 ## Запуск проекта на удаленном сервере :milky_way:
 Запуск проекта на удаленном сервере выполняется средствами контейнеров Docker. :whale:
 Перейдите на удаленный сервер.
 Установите Docker и Docker-compose.
-Создайте или скопируйте на сервер конфигурационные файлы `docker-compose.yml` и `nginx.conf` из каталога `infra/`
+Создайте на сервере каталог foodgram, в нем:
+создайте или скопируйте на сервер конфигурационные файлы `docker-compose.yml` и `nginx.conf` из каталога `infra/`,
+скопируйте в ту же директорию ваш локальный `.env` файл.
+Выполните команду 
+```
+sudo nano /etc/nginx/sites-enabled/default
+```
+Добавьте ваш домен по шаблону:
+```
+ server {
+    server_name <Ваш домен>;
+
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_pass <ALLOWED_HOSTS>;
+    }
+ }
+```
+--------------------------------------------------------------------
+#### Опционально: шифрование HTTPS
+##### Шаг 1. Установка certbot
+Чтобы установить certbot, вам понадобится пакетный менеджер snap. Установите его командой:
+```
+sudo apt install snapd
+```
+##### Шаг 2. Запускаем certbot и получаем SSL-сертификат
+Чтобы начать процесс получения сертификата, введите команду:
+```
+sudo certbot --nginx
+```
+В процессе оформления сертификата вам нужно будет указать свою электронную почту и ответить на несколько вопросов.
+- Enter email address (англ. «введите почту»). Почта нужна для предупреждений, что сертификат пора обновить.
+- Please read the Terms of Service... (англ. «прочитайте условия обслуживания»). Прочитайте правила по ссылке, введите Y и нажмите Enter.
+- Would you be willing to share your email address with the Electronic Frontier Foundation? (англ. «хотите ли вы поделиться своей почтой с Фондом электронных рубежей»). Отметьте на своё усмотрение Y (да) или N (нет) и нажмите Enter.
+Далее система оповестит вас о том, что учётная запись зарегистрирована и попросит указать имена, для которых вы хотели бы активировать HTTPS.
+После этого будет автоматически изменена конфигурация Nginx: в файл /etc/nginx/sites-enabled/default добавятся новые настройки и будут прописаны пути к сертификату.
+Перезагрузите конфигурацию Nginx:
+```
+sudo systemctl reload nginx
+```
+Откройте через браузер свой проект. Теперь в адресной строке вместо HTTP будет указан протокол HTTPS, а рядом с адресом будет виден символ «замочек».
+--------------------------------------------------------------------
+
 Запустите docker compose:
 ```
 sudo docker-compose up
