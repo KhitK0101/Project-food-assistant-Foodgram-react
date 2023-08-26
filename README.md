@@ -139,7 +139,6 @@ sudo systemctl reload nginx
     PASSPHRASE=<если при создании ssh-ключа вы использовали фразу-пароль>     
     SSH_USER=<username для подключения к серверу>
     SSH_HOST=<IP сервера>
-    
     ```
 
 Запустите docker compose:
