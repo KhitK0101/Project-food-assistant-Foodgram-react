@@ -2,7 +2,7 @@
     server_name mynote2023test.ddns.net;
 
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:7000;
     }
 
  server {
