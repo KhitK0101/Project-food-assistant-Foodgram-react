@@ -13,7 +13,7 @@
 ## Описание проекта Foodgram
 Дипломный проект — сайт Foodgram, «Продуктовый помощник». Онлайн-сервис и API для него. На этом сервисе пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
-## Установка и запуск проекта на локальном компьютере :computer:
+## Запуск проекта в dev-режиме :computer:
 Клонируйте репозиторий на локальную машину.
 ```
 git clone <адрес репозитария>
@@ -67,9 +67,17 @@ python manage.py runserver
 ## Запуск проекта на удаленном сервере :milky_way:
 Запуск проекта на удаленном сервере выполняется средствами контейнеров Docker. :whale:
 Перейдите на удаленный сервер.
-Установите Docker и Docker-compose.
+
+Установите docker на сервер:
+```
+sudo apt install docker.io 
+```
+Установите docker-compose на сервер. [Установка и использование Docker Compose в Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04-ru)
+
 Создайте на сервере каталог foodgram, в нем:
-создайте или скопируйте на сервер конфигурационные файлы `docker-compose.yml` и `nginx.conf` из каталога `infra/`,
+Локально отредактируйте файл infra/nginx.conf,
+встроке server_name впишите свой IP.
+Создайте или скопируйте на сервер конфигурационные файлы `docker-compose.yml` и `nginx.conf` из каталога `infra/`,
 скопируйте в ту же директорию ваш локальный `.env` файл.
 Выполните команду 
 ```
@@ -82,7 +90,7 @@ sudo nano /etc/nginx/sites-enabled/default
 
     location / {
         proxy_set_header Host $http_host;
-        proxy_pass <ALLOWED_HOSTS>;
+        proxy_pass <Ваш адрес хоста>;
     }
  }
 ```
@@ -115,6 +123,25 @@ sudo systemctl reload nginx
 
 --------------------------------------------------------------------
 
+Скопируйте папку docs на сервер.
+
+Для работы с Workflow добавьте в Secrets GitHub переменные окружения для работы:
+    ```
+    POSTGRES_USER=<пользователь бд>
+    POSTGRES_PASSWORD=<пароль>
+    DB_NAME=<имя базы данных postgres>
+    DB_HOST=<db>
+    DB_PORT=<5432>
+    DB_ENGINE=<django.db.backends.postgresql>
+    DOCKER_PASSWORD=<пароль от DockerHub>
+    DOCKER_USERNAME=<имя пользователя на DockerHub>
+    SSH_KEY=<ваш SSH ключ (для получения выполните команду: cat ~/.ssh/id_rsa)>
+    PASSPHRASE=<если при создании ssh-ключа вы использовали фразу-пароль>     
+    SSH_USER=<username для подключения к серверу>
+    SSH_HOST=<IP сервера>
+    
+    ```
+
 Запустите docker compose:
 ```
 sudo docker-compose up
@@ -123,12 +150,16 @@ sudo docker-compose up
 - контейнер базы данных db
 - контейнер приложения backend
 - контейнер веб-сервера nginx
-Создайте миграции в контейнере приложения `backend`
+
+Выполните команды:
 ```
 sudo docker-compose exec backend python manage.py makemigrations users
 sudo docker-compose exec backend python manage.py migrate
 sudo docker-compose exec backend python manage.py makemigrations recipes
 sudo docker-compose exec backend python manage.py collectstatic --no-input
+```
+Затем необходимо будет создать суперюзера
+```
 sudo docker-compose exec backend python manage.py createsuperuser
 ```
 ##### Пример проекта доступен по https://foodgrambykhit.sytes.net/ или http://84.201.179.250/ . Документация к API - http://84.201.179.250/api/docs/.
