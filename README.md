@@ -126,20 +126,20 @@ sudo systemctl reload nginx
 Скопируйте папку docs на сервер.
 
 Для работы с Workflow добавьте в Secrets GitHub переменные окружения для работы:
-    ```
-    POSTGRES_USER=<пользователь бд>
-    POSTGRES_PASSWORD=<пароль>
-    DB_NAME=<имя базы данных postgres>
-    DB_HOST=<db>
-    DB_PORT=<5432>
-    DB_ENGINE=<django.db.backends.postgresql>
-    DOCKER_PASSWORD=<пароль от DockerHub>
-    DOCKER_USERNAME=<имя пользователя на DockerHub>
-    SSH_KEY=<ваш SSH ключ (для получения выполните команду: cat ~/.ssh/id_rsa)>
-    PASSPHRASE=<если при создании ssh-ключа вы использовали фразу-пароль>     
-    SSH_USER=<username для подключения к серверу>
-    SSH_HOST=<IP сервера>
-    ```
+```
+POSTGRES_USER=<пользователь бд>
+POSTGRES_PASSWORD=<пароль>
+DB_NAME=<имя базы данных postgres>
+DB_HOST=<db>
+DB_PORT=<5432>
+DB_ENGINE=<django.db.backends.postgresql>
+DOCKER_PASSWORD=<пароль от DockerHub>
+DOCKER_USERNAME=<имя пользователя на DockerHub>
+SSH_KEY=<ваш SSH ключ (для получения выполните команду: cat ~/ssh/id_rsa)>
+PASSPHRASE=<если при создании ssh-ключа вы использовалифразу-пароль>     
+SSH_USER=<username для подключения к серверу>
+SSH_HOST=<IP сервера>
+```
 
 Запустите docker compose:
 ```
