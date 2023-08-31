@@ -29,7 +29,7 @@ services:
   nginx:
     image: nginx:1.21.3
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
@@ -37,7 +37,7 @@ services:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
     env_file:
-      - ./.env
+      - .env
     depends_on:
       - backend
       - frontend
