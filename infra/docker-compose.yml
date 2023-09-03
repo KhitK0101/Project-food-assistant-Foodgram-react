@@ -21,7 +21,7 @@ services:
   frontend:
     image: blackstalker13/foodgram_frontend:latest
     volumes:
-      - ./frontend/build/:/var/html/
+      - ./frontend/:/app/result_build/
     depends_on:
       - backend
 
