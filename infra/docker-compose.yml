@@ -13,7 +13,7 @@ services:
     restart: always
     volumes:
      - static_value:/static/
-     - media_value:/media/
+     - media_value:/app/media/
     depends_on:
      - foodgram-db
     env_file: .env
@@ -21,7 +21,7 @@ services:
   frontend:
     image: blackstalker13/foodgram_frontend:latest
     volumes:
-      - ./frontend/:/app/result_build/
+      - ../frontend/:/app/result_build/
     depends_on:
       - backend
 
@@ -34,7 +34,7 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/static/
-      - media_value:/media/
+      - media_value:/app/media/
     env_file: .env
     depends_on:
       - backend
