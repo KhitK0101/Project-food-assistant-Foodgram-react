@@ -96,7 +96,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/django/'
 STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
@@ -155,3 +155,5 @@ COOKING_TIME_MIN_ERROR = (
 INGREDIENT_MIN_AMOUNT = 1
 
 PAGINATION_PAGE_SIZE = 6
+
+CSRF_TRUSTED_ORIGINS = ['https://foodgrambykhit.sytes.net', 'https://84.201.179.250']
