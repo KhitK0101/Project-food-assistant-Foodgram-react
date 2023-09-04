@@ -179,19 +179,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        IngredientAmount.objects.filter(recipe=instance).delete()
-        self.add_ingredient(
-            ingredients=ingredients,
-            recipe=instance,
-            tags=tags
-        )
+        instance.tags.clear()
+        instance.tags.set(tags)
+        instance.ingredients.clear()
+        self.create_bulk_ingredients(recipe=instance,
+                                     ingredients=ingredients)
         return super().update(instance, validated_data)
-        # instance.tags.clear()
-        # instance.tags.set(tags)
-        # instance.ingredients.clear()
-        # self.create_bulk_ingredients(recipe=instance,
-        #                              ingredients=ingredients)
-        # return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         queryset = Recipe.objects.add_user_annotations(
