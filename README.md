@@ -163,7 +163,7 @@ sudo docker-compose exec backend python manage.py createsuperuser
 ```
 ##### Пример проекта доступен по https://foodgrambykhit.sytes.net/ или http://84.201.179.250/ . Документация к API - http://84.201.179.250/api/docs/.
 
-###### Name: Khit Pas: Harman9Bat
+###### Name: a@a.ru Pas: pass606ru
 
 ### Над проектом работали: 
 - Frontend - https://github.com/yandex-praktikum/foodgram-project-react
