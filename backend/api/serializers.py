@@ -134,6 +134,21 @@ class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(write_only=True,
                                       min_value=0, max_value=3200)
 
+    def validate(self, data):
+        ingredients_list = []
+        ingredients_amount = data.get('ingredients_amount')
+        if ingredients_amount is not None:
+            for ingredient in ingredients_amount:
+                if ingredient.get('amount') <= 0:
+                    raise serializers.ValidationError({
+                        'error': 'Число ингредиентов не может быть меньше 1'
+                    })
+                ingredients_list.append(ingredient['ingredient']['id'])
+
+        data['ingredients_amount'] = ingredients_list
+
+        return data
+
     class Meta:
         model = IngredientAmount
         fields = ['id', 'amount']
@@ -205,7 +220,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     'error': 'Время приготовления не может быть меньше минуты'
                 }
             )
-        tags = data['tags']
+        tags = data.get('tags')
         if not tags:
             raise serializers.ValidationError(
                 'Нужно указать хотя бы 1 тег.'
@@ -215,17 +230,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Такой тег уже существует, добавьте новый!'
             )
-        ingredients_list = []
-        ingredients_amount = data.get('ingredients_amount')
-        if ingredients_amount is not None:
-            for ingredient in ingredients_amount:
-                if ingredient.get('amount') <= 0:
-                    raise serializers.ValidationError({
-                        'error': 'Число ингредиентов не может быть меньше 1'
-                    })
-                ingredients_list.append(ingredient['ingredient']['id'])
 
-        if len(ingredients_list) > len(set(ingredients_list)):
+        ingredients_list = data.get('ingredients', [])
+        if len(ingredients_list) < 1:
+            raise serializers.ValidationError({
+                'error': 'Список ингредиентов не должен быть пустым'
+            })
+
+        if len(ingredients_list) != len(set(ingredients_list)):
             raise serializers.ValidationError(
                 {
                     'error': 'Ингредиенты не должны повторяться'
