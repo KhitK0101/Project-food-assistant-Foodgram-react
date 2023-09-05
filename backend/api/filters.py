@@ -45,7 +45,8 @@ class RecipeFilter(django_filters.FilterSet):
 
 class IngredientFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='istartswith')
+    field_name = django_filters.CharFilter(lookup_expr='icontains')
 
     class Meta:
         model = Ingredient
-        fields = ('name',)
+        fields = ('name', 'field_name',)
