@@ -279,3 +279,4 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
                 message='Вы уже добавили рецепт в корзину'
             )
         ]
+
