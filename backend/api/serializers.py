@@ -132,26 +132,11 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(write_only=True,
-                                      min_value=0, max_value=3200)
-
-    def validate(self, data):
-        ingredients_list = []
-        ingredients_amount = data.get('ingredients_amount')
-        if ingredients_amount is not None:
-            for ingredient in ingredients_amount:
-                if ingredient.get('amount') <= 0:
-                    raise serializers.ValidationError({
-                        'error': 'Число ингредиентов не может быть меньше 1'
-                    })
-                ingredients_list.append(ingredient['ingredient']['id'])
-
-        data['ingredients_amount'] = ingredients_list
-
-        return data
+                                      min_value=1, max_value=32000)
 
     class Meta:
         model = IngredientAmount
-        fields = ['id', 'amount']
+        fields = ('id', 'amount')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -237,11 +222,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'error': 'Список ингредиентов не должен быть пустым'
             })
 
-        if len(ingredients_list) != len(set(ingredients_list)):
+        ingredient_ids = [ingredient['id'] for ingredient in ingredients_list]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError(
-                {
-                    'error': 'Ингредиенты не должны повторяться'
-                }
+                {'error': 'Ингредиенты не должны повторяться'}
             )
         return data
 
