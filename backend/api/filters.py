@@ -1,5 +1,6 @@
-import django_filters
 from recipes.models import Ingredient, Recipe, Tag
+
+import django_filters
 
 
 class RecipeFilter(django_filters.FilterSet):

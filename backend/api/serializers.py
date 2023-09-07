@@ -1,11 +1,19 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.fields import HiddenField
 from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientAmount,
+    Recipe,
+    ShoppingCart,
+    Tag,
+)
 from users.models import Subscription, User
 
 
@@ -112,9 +120,7 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientAmountSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиента в рецепте."""
 
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all(),
-    )
+    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.CharField(
         source='ingredient.name',
         read_only=True

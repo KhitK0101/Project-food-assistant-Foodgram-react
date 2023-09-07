@@ -1,8 +1,10 @@
-from colorfield.fields import ColorField
 from django.conf import settings
 from django.core import validators
 from django.db import models
 from django.db.models import Exists, OuterRef
+
+from colorfield.fields import ColorField
+
 from users.models import User
 
 
