@@ -168,11 +168,7 @@ python manage.py runserver
    sudo docker-compose exec backend python manage.py createsuperuser
    
 
-5. Пример проекта доступен по https://foodgrambykhit.sytes.net/ или http://84.201.179.250/. Документация к API доступна по адресу http://84.201.179.250/api/docs/.
-
-6. Для входа в проект использованы следующие учетные данные:
-   - Email: a@a.ru
-   - Password: pass606ru
+5. Пример проекта доступен по https://foodgrambykhit.sytes.net/
 
 ## Участники проекта
 - Frontend: https://github.com/yandex-praktikum/foodgram-project-react
