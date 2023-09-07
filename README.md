@@ -76,9 +76,9 @@ python manage.py runserver
 
 ### Установка Docker и Docker Compose
 1. Установите Docker на сервере:
-   
+   ```
    sudo apt install docker.io 
-   
+   ```
 
 2. Установите Docker Compose на сервере. Следуйте инструкциям по установке и использованию Docker Compose в Ubuntu 20.04 (https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-compose-on-ubuntu-20-04-ru).
 
@@ -148,9 +148,9 @@ python manage.py runserver
    ```
 
 3. Запустите Docker Compose:
-   
+   ```
    sudo docker-compose up
-   
+   ```
    После сборки Docker Compose создадутся три контейнера:
    - контейнер базы данных db
    - контейнер приложения backend
