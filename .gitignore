@@ -140,6 +140,7 @@ node_modules/
 # Статика и медиа
 media/
 static/
+frontend/
 
 # VSCode
 .vscode/
